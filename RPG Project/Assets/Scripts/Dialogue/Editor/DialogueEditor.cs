@@ -7,9 +7,14 @@ namespace RPG.Dialogue.Editor
     public class DialogueEditor : EditorWindow
     {
         Dialogue selectedDialogue;
+        [NonSerialized]
         GUIStyle nodeStyle;
+        [NonSerialized]
         DialogueNode draggingNode = null;
+        [NonSerialized]
         Vector2 draggingOffset;
+        [NonSerialized]
+        DialogueNode creatingNode = null;
 
         [MenuItem("Window/Dialogue Editor")]
         public static void ShowEditorWindow()
@@ -63,6 +68,13 @@ namespace RPG.Dialogue.Editor
                 DrawConnection(node);
             }
 
+            if (creatingNode != null)
+            {
+                Undo.RecordObject(selectedDialogue, "Dialogue Node Created");
+                selectedDialogue.CreateNode(creatingNode);
+                creatingNode = null;
+            }
+
             ProcessEvent(Event.current);
         }
 
@@ -76,6 +88,10 @@ namespace RPG.Dialogue.Editor
             {
                 Undo.RecordObject(selectedDialogue, "Dialogue Text Change");
                 node.text = newText;
+            }
+            if (GUILayout.Button("+"))
+            {
+                creatingNode = node;
             }
             GUILayout.EndArea();
         }
@@ -102,8 +118,8 @@ namespace RPG.Dialogue.Editor
                 // Show why need for more natural.
                 if (draggingNode != null)
                 {
-                draggingOffset = draggingNode.rect.position - e.mousePosition;
-            }
+                    draggingOffset = draggingNode.rect.position - e.mousePosition;
+                }
             }
             else if (e.type == EventType.MouseUp && draggingNode != null)
             {
